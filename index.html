@@ -688,6 +688,14 @@ function buildTree(view){
  return {type:'person',id:'p:'+chairman.nodeId,p:chairman,layout:'h',children:[ceoN]};
 }
 function pcount(node){let c=(node.type==='person')?1:0;(node.children||[]).forEach(k=>c+=pcount(k));node._c=c;return c;}
+// Khối-level counts must be deduped: a khối giám đốc who is also a team/nhóm lead
+// appears as a card in more than one branch under the same khối, so raw pcount()
+// (which sums every branch) double-counts them. Overwrite _c for type==='khoi'
+// nodes with the Set-deduped count (same logic as viewCount / truncateAtKhoi).
+function fixKhoiCounts(node){
+ if(node.type==='khoi')node._c=viewCount({khoi:node.khoi});
+ (node.children||[]).forEach(fixKhoiCounts);
+}
 
 function setDefaultCollapsed(root,view){
  collapsed=new Set();pcount(root);
@@ -769,7 +777,7 @@ function blockHtml(node,ms,top){
 function render(){
  const scaler=document.getElementById('scaler');
  const view=query?VIEWS[0]:curView;
- const root=buildTree(view);pcount(root);
+ const root=buildTree(view);pcount(root);fixKhoiCounts(root);
  const ms=computeMatch(root);
  if(query){
    if(!ms||ms.matched.size===0){scaler.innerHTML='<div class="empty"><div class="b">Không tìm thấy</div><div>Thử từ khoá khác.</div></div>';return;}
