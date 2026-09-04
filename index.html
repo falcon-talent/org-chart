@@ -607,7 +607,7 @@ const VIEWS=[
  {id:'Platform',label:'Platform',khoi:'Platform'},{id:'MKT',label:'MKT',khoi:'MKT'},
  {id:'Publishing',label:'Publishing',khoi:'Publishing'},{id:'BO',label:'Back Office',khoi:'BO'},
 ];
-function viewCount(v){const r=buildTree(v);const s=new Set();(function w(n){if(n.type==='person')s.add(n.p.nodeId);(n.children||[]).forEach(w);})(r);return s.size;}
+function viewCount(v){const r=buildTree(v);const s=new Set();(function w(n){if(n.type==='person'&&passesFilter(n.p))s.add(n.p.nodeId);(n.children||[]).forEach(w);})(r);return s.size;}
 function isMgmt(p){return ['Director','Manager','Team Lead'].includes(p.lv)||p.f==='BOD'||!p.mgr;}
 
 let curView=VIEWS[0],collapsed=new Set(),scale=1,query='',panMoved=false;
@@ -654,11 +654,12 @@ function khoiNode(K){
    return cnt[b]-cnt[a]||a.localeCompare(b);});
  return {type:'khoi',id:'khoi:'+K,label:K,khoi:K,layout:'h',children:keys.map(T=>teamNode(K,T,kp))};
 }
-function filteredData(){return DATA.filter(p=>{
+function passesFilter(p){
  const s=(p.st||'Current').trim().toLowerCase();if(![...statusFilter].some(f=>f.toLowerCase()===s))return false;
  const lh=(p.lh||'').trim().toLowerCase();if(![...lhFilter].some(f=>f.toLowerCase()===lh))return false;
  return true;
-});}
+}
+function filteredData(){return DATA.filter(passesFilter);}
 function khoiList(){const d=filteredData();const s=new Set(d.filter(p=>!EXCL.has(p.nodeId)).map(p=>p.k));return KHOI_ORDER.filter(k=>s.has(k));}
 
 function buildMgmt(set,label){
@@ -687,7 +688,7 @@ function buildTree(view){
  if(!fchairman)return ceoN;
  return {type:'person',id:'p:'+chairman.nodeId,p:chairman,layout:'h',children:[ceoN]};
 }
-function pcount(node){let c=(node.type==='person')?1:0;(node.children||[]).forEach(k=>c+=pcount(k));node._c=c;return c;}
+function pcount(node){let c=(node.type==='person'&&passesFilter(node.p))?1:0;(node.children||[]).forEach(k=>c+=pcount(k));node._c=c;return c;}
 // Khối-level counts must be deduped: a khối giám đốc who is also a team/nhóm lead
 // appears as a card in more than one branch under the same khối, so raw pcount()
 // (which sums every branch) double-counts them. Overwrite _c for type==='khoi'
