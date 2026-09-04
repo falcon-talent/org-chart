@@ -1,0 +1,17 @@
+{
+  "name": "falcon-org-chart-server",
+  "version": "1.0.0",
+  "description": "Sơ đồ tổ chức Falcon — server tự host, yêu cầu đăng nhập Google (@falcongames.com)",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "google-auth-library": "^9.14.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
